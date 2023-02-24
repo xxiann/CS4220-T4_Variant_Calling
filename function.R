@@ -47,7 +47,7 @@ filtering <- function(file, count=2, mapq=40, p.value=0.05, p.v = 1, msi=1){
   return(df)
 }
 
-preprocess.df <- function(file, sum.filter=TRUE){
+preprocess.df <- function(file){
   df <- read.csv(file)
   med <- median(df$vs_SSC, na.rm = T)
   df <- df %>%
