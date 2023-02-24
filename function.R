@@ -47,5 +47,18 @@ filtering <- function(file, count=2, mapq=40, p.value=0.05, p.v = 1, msi=1){
   return(df)
 }
 
-
+preprocess.df <- function(file, sum.filter=TRUE){
+  df <- read.csv(file)
+  med <- median(df$vs_SSC, na.rm = T)
+  df <- df %>%
+    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
+           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
+    mutate(vs_SSC = ifelse(is.na(vs_SSC), med, vs_SSC),
+          vs_SPV = ifelse(is.na(vs_SPV), 1, vs_SPV),
+          vd_SSF = ifelse(is.na(vd_SSF), 1, vd_SSF),
+          vd_MSI = ifelse(is.na(vd_MSI), 0, vd_MSI),
+          FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
+          avgMQ = (m2_MQ+f_MQMR)/2) 
+  return(df)
+}
 
