@@ -16,23 +16,21 @@ def parse_train(files): # pass sequence of data files
         truth_pos = vcf['START_POS_REF'].isin(truth['POS'])
         vcf['LABEL'] = pd.concat([truth_chr, truth_pos], axis=1).all(axis=1)
 
-        vcf.drop(columns=['Chr', 'START_POS_REF', 'END_POS_REF', 'Sample_Name'], inplace=True)
+        vcf.drop(columns=['Chr', 'START_POS_REF', 'END_POS_REF', 'REF', 'ALT', 'Sample_Name'], inplace=True)
         dataset.append(vcf)
 
     train_set = pd.concat(dataset, ignore_index=True)
-    train_set = train_set[train_set['REF'] != 'N']
-    print(train_set)
 
     # encode categorical variables
-    train_set = pd.get_dummies(train_set, columns=['REF', 'ALT'], prefix=['REF', 'ALT'])
+    # train_set = pd.get_dummies(train_set, columns=['REF', 'ALT'], prefix=['REF', 'ALT'])
 
     return train_set
 
 def parse_test(dataset):
     feat = pd.read_table('./Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/data/'+dataset+'/snv-parse-'+dataset+'.txt', low_memory=False)
-    feat_encoded = feat.drop(columns=['Chr', 'START_POS_REF', 'END_POS_REF', 'Sample_Name'])
-    feat_encoded = pd.get_dummies(feat_encoded, columns=['REF', 'ALT'], prefix=['REF', 'ALT'])
-    return feat, feat_encoded, dataset
+    feat_filtered = feat.drop(columns=['Chr', 'START_POS_REF', 'END_POS_REF', 'REF', 'ALT', 'Sample_Name'])
+    # feat_encoded = pd.get_dummies(feat_encoded, columns=['REF', 'ALT'], prefix=['REF', 'ALT'])
+    return feat, feat_filtered, dataset
 
 def train(feat):
     # choose features to train model on
@@ -45,14 +43,13 @@ def train(feat):
     # else:
     #      xg_class.fit(X, y)
     xg_class.fit(X, y)
+    print(xg_class.get_booster().get_score(importance_type='gain'))
     xg_class.save_model('./Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/model.json')
 
-def test(test_set, test_set_encoded, dataset): # input test features
-    print(test_set_encoded)
+def test(test_set, test_set_filtered, dataset): # input test features
     xg_class = xgb.XGBClassifier(use_label_encoder=False) # instantiate classifier
     xg_class.load_model('./Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/model.json')
-    # print(test_set.shape)
-    labels = xg_class.predict(test_set_encoded) # predicted labels
+    labels = xg_class.predict(test_set_filtered) # predicted labels
     # rmse = np.sqrt(mean_squared_error(y_test, preds))
     # print("RMSE: %f" % (rmse))
 
@@ -63,16 +60,10 @@ def test(test_set, test_set_encoded, dataset): # input test features
             row = test_set.iloc[index, 0:2]
             row_df = pd.DataFrame({'Chr': row['Chr'], 'POS': row['START_POS_REF']}, index=[0])
             preds = pd.concat([preds, row_df], ignore_index=True)
-    # print(preds)
     preds.to_csv('./Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/data/'+dataset+'/'+dataset+'_predictions.csv', index=False)
 
 # train model on a combined train set with syn1-5 and real1
 train(parse_train(['syn1', 'syn2', 'syn3', 'syn4', 'syn5', 'real1']))
-
-# train model on syn2 to syn4
-# for i in range(2, 5):
-#     train(parse_train('syn'+str(i)), True)
-#     print("trained on syn"+str(i))
 
 # test model on real2_part1
 test(*parse_test('real2_part1'))
