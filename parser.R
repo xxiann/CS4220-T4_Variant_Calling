@@ -2,6 +2,8 @@
 # Parse VCF SNVs
 # Enquiries: Huang Weitai huangwt@gis.a-star.edu.sg
 
+library(tidyverse)
+
 parse.snv = function(sample.dir) {
   
   start.dir = getwd()
@@ -296,15 +298,56 @@ parse.snv = function(sample.dir) {
   
 }
 
+#' @description Reads in parsed files, filters based on criteria
+#' @param count: No of detection by the 4 variant callers, default 2
+#' @param mapq: Min. average mapping quality, default 40
+#' @param p.value: p.value threshold, default 0.5
+#' @param p.v: No. of features meeting p.value threshold, default 1 (out of 2)
+#' @param msi: Min microsatellite instability, default 1
+
+preprocess.1 <- function(file){
+  df <- read.table(file, header=TRUE)
+  med <- median(df$vs_SSC, na.rm = T)
+  df <- df %>%
+    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
+           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
+    mutate(vs_SSC = ifelse(is.na(vs_SSC), med, vs_SSC),
+           vs_SPV = ifelse(is.na(vs_SPV), 1, vs_SPV),
+           vd_SSF = ifelse(is.na(vd_SSF), 1, vd_SSF),
+           vd_MSI = ifelse(is.na(vd_MSI), 0, vd_MSI))
+  return(df)
+}
+
+preprocess.2 <- function(file){
+  df <- read.table(file, header=TRUE)
+  med <- median(df$vs_SSC, na.rm = T)
+  df <- df %>%
+    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
+           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
+    mutate(vs_SSC = ifelse(is.na(vs_SSC), med, vs_SSC),
+           vs_SPV = ifelse(is.na(vs_SPV), 1, vs_SPV),
+           vd_SSF = ifelse(is.na(vd_SSF), 1, vd_SSF),
+           vd_MSI = ifelse(is.na(vd_MSI), 0, vd_MSI),
+           FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
+           avgMQ = (m2_MQ+f_MQMR)/2, .keep='unused') %>%
+  return(df)
+}
+
 setwd("/Users/phoebe/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/data") #your local directory
-setwd("/Users/phoebe/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/data/syn4")
+setwd("/Users/phoebe/Library/CloudStorage/OneDrive-NationalUniversityofSingapore/Documents/ZB/CS4220/project_1/data/real1")
 
 #test
-parse.df = parse.snv(sample.dir='syn4')
-write.table(parse.df, 'snv-parse-syn4.txt', row.names = F, quote = F, sep = '\t')
+parse.df = parse.snv(sample.dir='syn1')
+write.table(parse.df, 'snv-parse-syn1.txt', row.names = F, quote = F, sep = '\t')
 
 #real1
-parse.df = parse.snv(sample.dir='syn5')
-write.table(parse.df, 'snv-parse-syn5.txt', row.names = F, quote = F, sep = '\t')
+parse.df = parse.snv(sample.dir='real2_part2')
+write.table(parse.df, 'snv-parse-real2_part2.txt', row.names = F, quote = F, sep = '\t')
 
+# preprocessing method 1
+proc.df = preprocess.1("snv-parse-real2_part1.txt")
+write.table(proc.df, "snv-parse-real2_part1-method1.txt", row.names = F, quote = F, sep = '\t')
 
+# preprocessing method 2
+proc.df = preprocess.2("snv-parse-real1.txt")
+write.table(proc.df, "snv-parse-real1-method2.txt", row.names = F, quote = F, sep = '\t')
