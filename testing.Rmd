@@ -287,63 +287,6 @@ preprocess <- function(file, count=2, mapq=40, p.value=0.05, p.v = 1, msi=1){
   print(paste("from:", m, "to:", nrow(df)))
   return(df)
 }
-
-
-# preprocess.df <- function(file){
-#   df <- read.csv(file)
-#   med <- median(df$vs_SSC, na.rm = T)
-#   df <- df %>%
-#     mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
-#            f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
-#     transmute(Chr = Chr,
-#               START_POS_REF = START_POS_REF,
-#               END_POS_REF = END_POS_REF,
-#               FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
-#               MQ = (m2_MQ+f_MQMR)/2,
-#               vs_SPV = ifelse(is.na(vs_SPV), 1, vs_SPV),
-#               vd_SSF = ifelse(is.na(vd_SSF), 1, vd_SSF),
-#               vs_SSC = ifelse(is.na(vs_SSC), med, vs_SSC),
-#               MSI = ifelse(is.na(vd_MSI), 0, vd_MSI)) 
-#   return(df)
-# }
-
-preprocess.2 <- function(file, count=2, mapq=40, p.value=0.05, p.v = 1, msi=1){
-  df <- read.csv(file)
-  
-  ## obtaining VC
-  x <- data.frame(t(data.frame(strsplit(df$REF_MFVdVs, "/"), row.names =c("CALL_mutect2","CALL_freebayes","CALL_vardict","CALL_varscan"))))
-  rownames(x) <- c(1:nrow(x))
-  x[!(is.na(x)|x=="NA")] = TRUE
-  x[(is.na(x)|x=="NA")] = FALSE
-  for(i in 1:4){x[,i] <- as.logical(x[,i])}
-  
-  ## detect + pass
-  y <- df[,9:12]
-  z <- x&y
-  z <- data.frame(FILTER=rowSums(z))
-  #colnames(z) <- "FILTER"
-  df <- cbind(df, z)
-  
-  m = nrow(df)
-  df <- df %>%
-    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
-           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
-    mutate(avgMQ = (m2_MQ+f_MQMR)/2,
-           vs_SPV = ifelse((vs_SPV < p.value)&(!is.na(vs_SPV)), TRUE, FALSE),
-           vd_SSF = ifelse((vd_SSF < p.value)&(!is.na(vd_SSF)), TRUE, FALSE)) %>%
-    transmute(Chr = Chr,
-              START_POS_REF = START_POS_REF,
-              END_POS_REF = END_POS_REF,
-              FILTER = FILTER,
-              MQ = ifelse(avgMQ > mapq, TRUE, FALSE),
-              P.V = vs_SPV + vd_SSF,
-              MSI = ifelse((vd_MSI > msi)&(!is.na(vd_MSI)), TRUE, FALSE)) %>%
-    filter((FILTER >= count ) | (MQ | (P.V >= p.v) | MSI))
-  print(paste("from:", m, "to:", nrow(df)))
-  return(df)
-}
-
-# filtering(vcffiles[1])
 ```
 
 - passed + detected variant call == filter calls
@@ -367,23 +310,54 @@ res
 ## data used for the model
 full <- data.frame()
 
-for (i in 1:7){
+for (i in 1:6){
   truth <- read.table(truthfiles[i]) %>% # bed files
       mutate(prediction = TRUE) # add an additional column
-  mypred <- preprocess.df(vcffiles[i])
+  mypred <- preprocess.2(vcffiles[i])
+  
+  # write.table(mypred, paste0(data[i],"-processed.txt"), row.names = F, quote = F)
   # mypred <- read.csv(vcffiles[i])
   df <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3")) %>%
       mutate(prediction = ifelse(is.na(prediction), FALSE, TRUE))
   full <- rbind(full, df)
 }
-## fitting model
-# vcf.fit = glm(prediction ~ FILTER + MQ + vs_SPV + vd_SSF + MSI, data=full, family=binomial)
 
-# vcf.fit = glm(prediction ~ FILTER + avgMQ + vs_SPV + vd_SSF + vs_SSC + vd_MSI, data=full, family=binomial)
+################# 
+# mypred <- preprocess.2("output/snv-parse-real2_part2.csv")
+# write.table(mypred, "real2_part2-processed.txt", row.names = F, quote = F)
 
-vcf.fit = glm(prediction ~ FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan + m2_MQ + f_MQMR + vs_SSC + vs_SPV + vd_SSF + vd_MSI, data=full, family=binomial)
+# for (i in 1:6){
+#   truth <- read.table(truthfiles[i]) %>% # bed files
+#       mutate(prediction = TRUE) # add an additional column
+#   mypred <- read.csv(vcffiles[i])
+#   # mypred <- read.csv(vcffiles[i])
+#   df <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3")) %>%
+#       mutate(prediction = ifelse(is.na(prediction), FALSE, TRUE))
+#   full <- rbind(full, df)
+# }
+# full <- preprocess.mean(full)
+```
+
+
+```{r}
+###### fitting model #########
+# library(caret)
+start_time <- Sys.time()
+
+# vcf.fit = glm(prediction ~ Mutect2 + Freebayes + Vardict + Varscan + FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan + m2_MQ + f_MQMR + vs_SSC + vs_SPV + vd_SSF + vd_MSI, data=full, family=binomial)
+
+# vcf.fit = glm(prediction ~ FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan + m2_MQ + f_MQMR + vs_SSC + vs_SPV + vd_SSF + vd_MSI, data=full, family=binomial)
+
+vcf.fit = glm(prediction ~ FILTER + avgMQ + vs_SPV + vd_SSF + vs_SSC + vd_MSI, data=full, family=binomial)
+
+end_time <- Sys.time()
+print(end_time - start_time)
 
 summary(vcf.fit)
+importances <- varImp(vcf.fit) 
+importances <- importances %>%
+  arrange(desc(Overall)) 
+View(importances)
 ```
 
 ## threshold
@@ -423,6 +397,7 @@ roc(full$prediction, vcf.fit$fitted.values, plot=TRUE, legacy.axes=TRUE, percent
 roc(full$prediction, vcf.fit$fitted.values, plot=TRUE, legacy.axes=TRUE, percent=TRUE, xlab="False Positive Percentage", ylab="True Postive Percentage", col="#377eb8", lwd=4, print.auc=TRUE, print.auc.x=45, partial.auc=c(100, 90), auc.polygon = TRUE, auc.polygon.col = "#377eb822")
 
 ```
+
 ```{r}
 roc.df[roc.df$tpp >= 80 & roc.df$tpp < 85,]
 x <-roc.df[roc.df$tpp >= 85 & roc.df$tpp < 90,]
@@ -434,11 +409,11 @@ x <-roc.df[roc.df$tpp >= 85 & roc.df$tpp < 90,]
 res <- data.frame(dataset = character(),
                   TP = integer(), FP = integer(), FN = integer(), Precision = numeric(), Recall = numeric(), F1 = numeric())
 
-for (i in 1:7){
+for (i in 7){
   truth <- read.table(truthfiles[i]) %>% # bed files
       mutate(prediction = TRUE) # add an additional column
   
-  mypred <- preprocess.df(vcffiles[i])
+  mypred <- preprocess.2(vcffiles[i])
   
   testing <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3")) %>%
       mutate(prediction = ifelse(is.na(prediction), FALSE, TRUE))
@@ -447,7 +422,7 @@ for (i in 1:7){
   # testing$result[vcf.prob > .5] = TRUE
   # testing$result[vcf.prob <= .5] = FALSE
   
-  called <- testing[vcf.prob > .939,1:3]
+  called <- testing[vcf.prob > .945,1:3]
   f1stats <- calc.F1(called, truth[,1:3])
   res[i,] = c(data[i], f1stats)
 }
@@ -455,13 +430,13 @@ for (i in 1:7){
 # checking for best threshold
 # truth <- read.table(truthfiles[7]) %>% # bed files
 #     mutate(prediction = TRUE) # add an additional column
-# mypred <- preprocess.df(vcffiles[7])
+# mypred <- preprocess.2(vcffiles[7])
 # testing <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3")) %>%
 #     mutate(prediction = ifelse(is.na(prediction), FALSE, TRUE))
 # vcf.prob = predict(vcf.fit, testing, type="response")
 # 
 # count=1
-# for (i in seq(0.930,0.951, by=0.001)){
+# for (i in seq(0.957,0.963, by=0.001)){
 #   called <- testing[vcf.prob > i,1:3]
 #   f1stats <- calc.F1(called, truth[,1:3])
 #   res[count,] = c(paste(i), f1stats)
@@ -488,7 +463,7 @@ write.table(called,"team4_pred_trueonly.bed", row.names = F, quote = F)
 ## save model
 ```{r}
 # Save the model to a file
-saveRDS(vcf.fit, "model_file.rds")
+saveRDS(vcf.fit, "logreg_model.rds")
 ```
 
 
@@ -506,7 +481,7 @@ library(randomForest)
 
 truth <- read.table(truthfiles[7]) %>% # bed files
       mutate(prediction = TRUE) # add an additional column
-mypred <- preprocess.df(vcffiles[7])
+mypred <- preprocess.2(vcffiles[7])
 testing <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3")) %>%
       mutate(prediction = ifelse(is.na(prediction), FALSE, TRUE))
 
@@ -514,14 +489,14 @@ testing <- left_join(mypred, truth, by = c("Chr"="V1", "START_POS_REF"="V2", "EN
 full$prediction <- factor(full$prediction)
 # Fitting Random Forest to the train dataset
 set.seed(120)  # Setting seed
-model1 = randomForest(x = full[,9:18],
+model1 = randomForest(x = full[,c(9:11, 13:21)],
                       y = full$prediction,
                       ntree = 500)
 
 model1
   
 # Predicting the Test set results
-y_pred = predict(model1, newdata = testing[,9:18])
+y_pred = predict(model1, newdata = testing[,c(9:11, 13:21)])
   
 # Confusion Matrix
 confusion_mtx = table(testing$prediction, y_pred)
@@ -538,14 +513,22 @@ varImpPlot(model1)
 ```
 
 ```{r}
-model2 = randomForest(x = full[,15:20],
+x <- data.frame(predict = as.logical(y_pred))
+prediction <- mypred[x$predict,] 
+
+f1stats <- calc.F1(prediction, truth[,1:3])
+f1stats
+```
+
+```{r}
+model2 = randomForest(x = full[,c(15:18,20,21)],
                       y = full$prediction,
                       ntree = 500)
 
 model2
 
 # Predicting the Test set results
-y_pred = predict(model2, newdata = testing[,15:20])
+y_pred = predict(model2, newdata = testing[,c(15:20)])
   
 # Confusion Matrix
 confusion_mtx = table(testing$prediction, y_pred)
@@ -580,4 +563,33 @@ f1stats
 
 
 
+
+
+
+# naive comparison
+```{r}
+vc <- c("Mutect2", "Freebayes", "Vardict", "Varscan", "FILTER_Mutect2","FILTER_Freebayes","FILTER_Vardict","FILTER_Varscan")
+
+res <- data.frame(dataset = character(),
+                  TP = integer(), FP = integer(), FN = integer(), Precision = numeric(), Recall = numeric(), F1 = numeric())
+
+truth <- read.table(truthfiles[7]) %>% # bed files
+      mutate(prediction = TRUE) # add an additional column
+mypred <- preprocess.2(vcffiles[7])
+for (i in 1:8){
+  called = mypred[mypred[,vc[i]],]
+  f1stats <- calc.F1(called, truth[,1:3])
+  res[i,] = c(vc[i], f1stats)
+}
+
+called = mypred[mypred[,vc[1]] & mypred[,vc[2]],]
+f1stats <- calc.F1(called, truth[,1:3])
+res[9,] = c("Mutect2 & Freebayes", f1stats)
+
+called = mypred[mypred[,vc[5]] & mypred[,vc[6]],]
+f1stats <- calc.F1(called, truth[,1:3])
+res[10,] = c("FILTER Mutect2 & Freebayes", f1stats)
+
+res
+```
 
