@@ -108,11 +108,11 @@ table(weights, y)
 
 #fitting random forest model
 start = Sys.time()
-rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE, sample.fraction = unique(weights))
+rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE, case.weights = weights)
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.samplefrac.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.caseweight.RData")
 
 #loading random forest model
 load("C:/Users/zhich/Downloads/rf.m1.preal1.RData")
