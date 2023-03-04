@@ -47,22 +47,37 @@ filtering <- function(file, count=2, mapq=40, p.value=0.05, p.v = 1, msi=1){
   return(df)
 }
 
-preprocess.df <- function(file){
+
+preprocess.2 <- function(file){
   df <- read.csv(file)
   med <- median(df$vs_SSC, na.rm = T)
+  med.1 <- median(df$m2_MQ, na.rm = T)
+  med.2 <- median(df$f_MQMR, na.rm = T)
+  med.3 <- median(df$vd_SSF, na.rm = T)
+  med.4 <- median(df$vs_SPV, na.rm = T)
+  med.5 <- median(df$vd_MSI, na.rm = T)
+  ## obtaining VC
+  x <- data.frame(t(data.frame(strsplit(df$REF_MFVdVs, "/"), row.names =c("Mutect2","Freebayes","Vardict","Varscan"))))
+  rownames(x) <- c(1:nrow(x))
+  x[!(is.na(x)|x=="NA")] = TRUE
+  x[(is.na(x)|x=="NA")] = FALSE
+  for(i in 1:4){x[,i] <- as.logical(x[,i])}
+  df <- cbind(df,x)
+  
   df <- df %>%
-    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, 0), m2_MQ),
-           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, 0), f_MQMR)) %>%
+    mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, med.1), m2_MQ),
+           f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, med.2), f_MQMR)) %>%
     mutate(vs_SSC = ifelse(is.na(vs_SSC), med, vs_SSC),
-          vs_SPV = ifelse(is.na(vs_SPV), 1, vs_SPV),
-          vd_SSF = ifelse(is.na(vd_SSF), 1, vd_SSF),
-          vd_MSI = ifelse(is.na(vd_MSI), 0, vd_MSI),
-          FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
-          avgMQ = (m2_MQ+f_MQMR)/2) 
+           vs_SPV = ifelse(is.na(vs_SPV), ifelse(!is.na(vd_SSF), vd_SSF, med.3), vs_SPV),
+           vd_SSF = ifelse(is.na(vd_SSF), ifelse(!is.na(vs_SPV), vs_SPV, med.4), vd_SSF),
+           vd_MSI = ifelse(is.na(vd_MSI), med.5, vd_MSI)
+           # CALLED = Mutect2 + Freebayes + Vardict + Varscan,
+           # FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
+           # avgMQ = (m2_MQ+f_MQMR)/2
+           )
+
   return(df)
 }
-
-
 
 
 
