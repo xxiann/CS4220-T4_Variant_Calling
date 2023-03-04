@@ -98,13 +98,21 @@ m1 <- subset(pall, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,F
 #truth labels
 y <- as.factor(pall$label)
 
+#generating weights to balance sampling
+w <- 1/table(y)
+w <- w/sum(w)
+weights <- rep(0, nrow(pall))
+weights[y == 0] <- w['0']
+weights[y == 1] <- w['1']
+table(weights, y)
+
 #fitting random forest model
 start = Sys.time()
-rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = FALSE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE)
+rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE, sample.fraction = unique(weights))
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.samplefrac.RData")
 
 #loading random forest model
 load("C:/Users/zhich/Downloads/rf.m1.preal1.RData")
