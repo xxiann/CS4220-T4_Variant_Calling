@@ -3,6 +3,7 @@ library(ranger)
 library(data.table)
 library(dplyr)
 library(caret)
+library(performanceEstimation)
 
 #parameters
 ntrees <- 1000
@@ -87,32 +88,51 @@ combined6[ , (cols) := lapply(.SD, nafill, fill=0), .SDcols = cols]
 
 #overall combined dataframe (syn1-5,real1p1, real2p1)
 # pall <- rbindlist(list(combined1,combined2,combined3,combined4,combined5,combined6,combined7))
+
+#save processed data
 fwrite(combined6, "C:/Users/zhich/Downloads/preal1.txt")
 
-#creating feature subsets
+#load processed data
 pall <- fread("C:/Users/zhich/Downloads/preal1.txt")
-m1 <- subset(pall, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FILTER_Freebayes,FILTER_Vardict,FILTER_Varscan,m2_MQ,f_MQMR,vs_SSC,vs_SPV,vd_SSF,vd_MSI))
+pall$label <- as.factor(pall$label)
+
+#creating feature subsets
+m1 <- subset(pall, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FILTER_Freebayes,FILTER_Vardict,FILTER_Varscan,m2_MQ,f_MQMR,vs_SSC,vs_SPV,vd_SSF,vd_MSI,label))
 # m2 <- subset(pall, select = c(CALL_mutect2,CALL_freebayes,CALL_vardict,CALL_varscan,vs_SSC,vs_SPV,vd_SSF,vd_MSI,FILTER,avgMQ))
 # og <- subset(pall, select = -c(FILTER,avgMQ,feature,label))
 
+#oversampling minority class using SMOTE
+m1 <- smote(label ~., m1, perc.over = 38, perc.under = 1)
+m1$Mutect2 <- as.logical(m1$Mutect2)
+m1$Freebayes <- as.logical(m1$Freebayes)
+m1$Vardict <- as.logical(m1$Vardict)
+m1$Varscan <- as.logical(m1$Varscan)
+m1$FILTER_Mutect2 <- as.logical(m1$FILTER_Mutect2)
+m1$FILTER_Freebayes <- as.logical(m1$FILTER_Freebayes)
+m1$FILTER_Vardict <- as.logical(m1$FILTER_Vardict)
+m1$FILTER_Varscan <- as.logical(m1$FILTER_Varscan)
+
 #truth labels
-y <- as.factor(pall$label)
+y <- as.factor(m1$label)
+
+#removing labels from training data
+m1 <- subset(m1, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FILTER_Freebayes,FILTER_Vardict,FILTER_Varscan,m2_MQ,f_MQMR,vs_SSC,vs_SPV,vd_SSF,vd_MSI))
 
 #generating weights to balance sampling
 w <- 1/table(y)
 w <- w/sum(w)
-weights <- rep(0, nrow(pall))
+weights <- rep(0, nrow(m1))
 weights[y == 0] <- w['0']
 weights[y == 1] <- w['1']
 table(weights, y)
 
 #fitting random forest model
 start = Sys.time()
-rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE, case.weights = weights)
+rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE)
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.caseweight.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.smote.RData")
 
 #loading random forest model
 load("C:/Users/zhich/Downloads/rf.m1.preal1.RData")
