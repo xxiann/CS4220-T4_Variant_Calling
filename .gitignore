@@ -201,3 +201,7 @@ cython_debug/
 #.idea/
 
 # User added:
+
+data/
+*.csv
+*.txt
