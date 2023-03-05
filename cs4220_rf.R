@@ -102,15 +102,15 @@ m1 <- subset(pall, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,F
 # og <- subset(pall, select = -c(FILTER,avgMQ,feature,label))
 
 #oversampling minority class using SMOTE
-m1 <- smote(label ~., m1, perc.over = 38, perc.under = 1)
-m1$Mutect2 <- as.logical(m1$Mutect2)
-m1$Freebayes <- as.logical(m1$Freebayes)
-m1$Vardict <- as.logical(m1$Vardict)
-m1$Varscan <- as.logical(m1$Varscan)
-m1$FILTER_Mutect2 <- as.logical(m1$FILTER_Mutect2)
-m1$FILTER_Freebayes <- as.logical(m1$FILTER_Freebayes)
-m1$FILTER_Vardict <- as.logical(m1$FILTER_Vardict)
-m1$FILTER_Varscan <- as.logical(m1$FILTER_Varscan)
+# m1 <- smote(label ~., m1, perc.over = 38, perc.under = 1)
+# m1$Mutect2 <- as.logical(m1$Mutect2)
+# m1$Freebayes <- as.logical(m1$Freebayes)
+# m1$Vardict <- as.logical(m1$Vardict)
+# m1$Varscan <- as.logical(m1$Varscan)
+# m1$FILTER_Mutect2 <- as.logical(m1$FILTER_Mutect2)
+# m1$FILTER_Freebayes <- as.logical(m1$FILTER_Freebayes)
+# m1$FILTER_Vardict <- as.logical(m1$FILTER_Vardict)
+# m1$FILTER_Varscan <- as.logical(m1$FILTER_Varscan)
 
 #truth labels
 y <- as.factor(m1$label)
@@ -122,17 +122,17 @@ m1 <- subset(m1, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FIL
 w <- 1/table(y)
 w <- w/sum(w)
 weights <- rep(0, nrow(m1))
-weights[y == 0] <- w['0']
-weights[y == 1] <- w['1']
+weights[y == 0] <- w['0'] + 0.4
+weights[y == 1] <- w['1'] - 0
 table(weights, y)
 
 #fitting random forest model
 start = Sys.time()
-rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE)
+rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = seed, importance = 'permutation', replace = TRUE, splitrule = "hellinger", keep.inbag = TRUE, save.memory = TRUE, probability=TRUE, case.weights = weights)
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.smote.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.cw+0.4-0.RData")
 
 #loading random forest model
 load("C:/Users/zhich/Downloads/rf.m1.preal1.RData")
