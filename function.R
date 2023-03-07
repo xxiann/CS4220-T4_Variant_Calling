@@ -25,8 +25,8 @@ preprocess.2 <- function(file){
   med <- median(df$vs_SSC, na.rm = T)
   med.1 <- median(df$m2_MQ, na.rm = T)
   med.2 <- median(df$f_MQMR, na.rm = T)
-  med.3 <- median(df$vd_SSF, na.rm = T)
-  med.4 <- median(df$vs_SPV, na.rm = T)
+  med.3 <- median(df$vs_SPV, na.rm = T)
+  med.4 <- median(df$vd_SSF, na.rm = T)
   med.5 <- median(df$vd_MSI, na.rm = T)
   
   # obtaining detected VC
