@@ -51,7 +51,7 @@ pall <- rbind(combined6,combined7)
 y <- as.factor(m1$label)
 
 # creating feature subsets, removing labels from training data
-m1 <- subset(m1, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FILTER_Freebayes,FILTER_Vardict,FILTER_Varscan,m2_MQ,f_MQMR,vs_SSC,vs_SPV,vd_SSF,vd_MSI))
+m1 <- subset(pall, select = c(Mutect2,Freebayes,Vardict,Varscan,FILTER_Mutect2,FILTER_Freebayes,FILTER_Vardict,FILTER_Varscan,m2_MQ,f_MQMR,vs_SSC,vs_SPV,vd_SSF,vd_MSI))
 
 # fitting random forest model
 start = Sys.time()
