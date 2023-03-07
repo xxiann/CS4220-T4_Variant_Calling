@@ -293,47 +293,45 @@ parse.snv = function(sample.dir) {
 # setwd('D:/Drive/Drive/Research/benchmark-sets/training') #your local directory
 # setwd("~/OneDrive/Work/Teaching/CS4220 2022/Project/Data")
 
-#test
-parse.df = parse.snv(sample.dir='data/test')
-write.table(parse.df, 'output/snv-parse-test.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-test.csv', row.names = F, quote = F)
-
-#real1
-# parse.df = parse.snv(sample.dir='icgc-cll')
-parse.df = parse.snv(sample.dir='data/real1')
-write.table(parse.df, 'output/snv-parse-real1.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-real1.csv', row.names = F, quote = F)
-
-
-parse.df = parse.snv(sample.dir='data/real2_part1')
-write.table(parse.df, 'output/snv-parse-real2_part1.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-real2_part1.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/real2_part2')
-write.table(parse.df, 'output/snv-parse-real2_part2.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-real2_part2.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/syn1')
-write.table(parse.df, 'output/snv-parse-syn1.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-syn1.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/syn2')
-write.table(parse.df, 'output/snv-parse-syn2.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-syn2.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/syn3')
-write.table(parse.df, 'output/snv-parse-syn3.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-syn3.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/syn4')
-write.table(parse.df, 'output/snv-parse-syn4.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-syn4.csv', row.names = F, quote = F)
-
-parse.df = parse.snv(sample.dir='data/syn5')
-write.table(parse.df, 'output/snv-parse-syn5.txt', row.names = F, quote = F, sep = '\t')
-write.csv(parse.df, 'output/snv-parse-syn5.csv', row.names = F, quote = F)
-
-
+# #test
+# parse.df = parse.snv(sample.dir='data/test')
+# write.table(parse.df, 'output/snv-parse-test.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-test.csv', row.names = F, quote = F)
+# 
+# #real1
+# # parse.df = parse.snv(sample.dir='icgc-cll')
+# parse.df = parse.snv(sample.dir='data/real1')
+# write.table(parse.df, 'output/snv-parse-real1.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-real1.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/real2_part1')
+# write.table(parse.df, 'output/snv-parse-real2_part1.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-real2_part1.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/real2_part2')
+# write.table(parse.df, 'output/snv-parse-real2_part2.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-real2_part2.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/syn1')
+# write.table(parse.df, 'output/snv-parse-syn1.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-syn1.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/syn2')
+# write.table(parse.df, 'output/snv-parse-syn2.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-syn2.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/syn3')
+# write.table(parse.df, 'output/snv-parse-syn3.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-syn3.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/syn4')
+# write.table(parse.df, 'output/snv-parse-syn4.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-syn4.csv', row.names = F, quote = F)
+# 
+# parse.df = parse.snv(sample.dir='data/syn5')
+# write.table(parse.df, 'output/snv-parse-syn5.txt', row.names = F, quote = F, sep = '\t')
+# write.csv(parse.df, 'output/snv-parse-syn5.csv', row.names = F, quote = F)
+# 
 
 
 
