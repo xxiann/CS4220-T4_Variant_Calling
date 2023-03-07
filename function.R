@@ -18,7 +18,6 @@ calc.F1 = function(pred,truth) {
   return(res)
 }
 
-#' input parsed text file as argument
 preprocess.2 <- function(file){
   df <- fread(file)
   
@@ -50,14 +49,3 @@ preprocess.2 <- function(file){
 
   return(df)
 }
-
-
-
-
-
-
-
-
-
-
-
