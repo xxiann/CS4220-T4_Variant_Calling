@@ -16,8 +16,8 @@ set.seed(seed)
 # psyn3 <- fread("C:/Users/zhich/Downloads/extracolumns-20230226T083050Z-001/extracolumns/syn3-processed.txt")
 # psyn4 <- fread("C:/Users/zhich/Downloads/extracolumns-20230226T083050Z-001/extracolumns/syn4-processed.txt")
 # psyn5 <- fread("C:/Users/zhich/Downloads/extracolumns-20230226T083050Z-001/extracolumns/syn5-processed.txt")
-preal1 <- fread("C:/Users/zhich/Downloads/ver3-20230307T141520Z-001/ver3/real1-processed.txt")
-preal2p1 <- fread("C:/Users/zhich/Downloads/ver3-20230307T141520Z-001/ver3/real2_part1-processed.txt")
+preal1 <- fread("C:/Users/zhich/Downloads/version2-20230304T174310Z-001/version2/real1-processed.txt")
+preal2p1 <- fread("C:/Users/zhich/Downloads/version2-20230304T174310Z-001/version2/real2_part1-processed.txt")
 
 # truth1 <- fread("C:/Users/zhich/Downloads/syn1/syn1_truth.bed")
 # truth2 <- fread("C:/Users/zhich/Downloads/syn2/syn2_truth.bed")
@@ -90,10 +90,10 @@ combined7[ , (cols) := lapply(.SD, nafill, fill=0), .SDcols = cols]
 pall <- rbindlist(list(combined6,combined7))
 
 #save processed data
-fwrite(pall, "C:/Users/zhich/Downloads/preal1.preal2p1.updated.txt")
+fwrite(pall, "C:/Users/zhich/Downloads/preal1.preal2p1.txt")
 
 #load processed data
-pall <- fread("C:/Users/zhich/Downloads/preal1.preal2p1.updated.txt")
+pall <- fread("C:/Users/zhich/Downloads/preal1.preal2p1.txt")
 pall$label <- as.factor(pall$label)
 
 #creating feature subsets
@@ -132,13 +132,13 @@ rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = se
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/team4_randomforest_submission.final.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/team4_randomforest_submission.RData")
 
 #loading random forest model
-load("C:/Users/zhich/Downloads/team4_randomforest_submission.final.RData")
+load("C:/Users/zhich/Downloads/team4_randomforest_submission.RData")
 
 #preprocessing test data (real2p2)
-preal2p2 <- fread("C:/Users/zhich/Downloads/ver3-20230307T141520Z-001/ver3/real2_part2-processed.txt")
+preal2p2 <- fread("C:/Users/zhich/Downloads/real2_part2-processed.txt")
 preal2p2$feature <- paste(preal2p2$Chr, preal2p2$START_POS_REF, sep= ".")
 preal2p2 = subset(preal2p2, select = -c(Chr,START_POS_REF,END_POS_REF) )
 
@@ -159,14 +159,14 @@ probabilities <- as.data.frame(predict(rf.m1, data = real2p2m1, type='response',
 pred.real2p2 <- max.col(probabilities)-1
 
 #saving predictions (prediction for all positions)
-preal2p2 <- fread("C:/Users/zhich/Downloads/ver3-20230307T141520Z-001/ver3/real2_part2-processed.txt")
+preal2p2 <- fread("C:/Users/zhich/Downloads/real2_part2-processed.txt")
 output.real2p2 = data.frame(Chr=preal2p2$Chr,START_POS_REF=preal2p2$START_POS_REF,END_POS_REF=preal2p2$END_POS_REF,Prediction=pred.real2p2)
-fwrite(output.real2p2,"C:/Users/zhich/Downloads/team4_real2_part2.predictions_submission.final.bed", sep = '\t')
+fwrite(output.real2p2,"C:/Users/zhich/Downloads/team4_real2_part2.predictions_submission.bed", sep = '\t')
 
 #saving predictions (positives only, following format of given truth files)
 mutations.only <- output.real2p2[output.real2p2$Prediction == 1,]
 mutations.only <- subset(mutations.only, select = -c(Prediction))
-fwrite(mutations.only,"C:/Users/zhich/Downloads/team4_real2_part2.predictions_mutations.only_submission.final.bed", sep = '\t', col.names = FALSE)
+fwrite(mutations.only,"C:/Users/zhich/Downloads/team4_real2_part2.predictions_mutations.only_submission.bed", sep = '\t', col.names = FALSE)
 
 #confusion matrix **only for testing on syn1-5, real1p1, real2p1 data**
 # confusionMatrix(table(max.col(probabilities)-1,creal2p1$label))
