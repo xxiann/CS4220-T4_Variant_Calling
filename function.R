@@ -71,9 +71,6 @@ preprocess.2 <- function(file){
            vs_SPV = ifelse(is.na(vs_SPV), ifelse(!is.na(vd_SSF), vd_SSF, med.3), vs_SPV),
            vd_SSF = ifelse(is.na(vd_SSF), ifelse(!is.na(vs_SPV), vs_SPV, med.4), vd_SSF),
            vd_MSI = ifelse(is.na(vd_MSI), med.5, vd_MSI)
-           # CALLED = Mutect2 + Freebayes + Vardict + Varscan,
-           # FILTER = FILTER_Mutect2 + FILTER_Freebayes + FILTER_Vardict + FILTER_Varscan,
-           # avgMQ = (m2_MQ+f_MQMR)/2
            )
 
   return(df)
