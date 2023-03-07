@@ -132,10 +132,10 @@ rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = se
 print( Sys.time() - start )
 
 #saving random forest model
-save(rf.m1,file="C:/Users/zhich/Downloads/rf.m1.preal1.preal2p1.RData")
+save(rf.m1,file="C:/Users/zhich/Downloads/team4_randomforest_submission.RData")
 
 #loading random forest model
-load("C:/Users/zhich/Downloads/rf.m1.preal1.RData")
+load("C:/Users/zhich/Downloads/team4_randomforest_submission.RData")
 
 #preprocessing test data (real2p2)
 preal2p2 <- fread("C:/Users/zhich/Downloads/real2_part2-processed.txt")
