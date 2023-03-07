@@ -36,4 +36,8 @@ fwrite(mutations.only,"prediction/team4_real2_part2.predictions_mutations.only_s
 ######## f1 stats #########
 # generating f1 stats for test data (real2p2)
 # truth <- fread( ) # truth file for real2p2
-# f1stats <- calc.F1(as.data.frame(mutations.only), as.data.frame(truth))
+# truth$label <- 1
+# truth <- left_join(test, truth, by=c("Chr"="V1", "START_POS_REF"="V2", "END_POS_REF"="V3"))
+# cols = c('label')
+# truth[ , (cols) := lapply(.SD, nafill, fill=0), .SDcols = cols]
+# f1stats <- calc.F1(as.data.frame(mutations.only), as.data.frame(truth[,c(1:3,23)]))
