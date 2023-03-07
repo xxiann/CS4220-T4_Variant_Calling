@@ -9,12 +9,10 @@ You are working on a project to call somatic single nucleotide variants (SNVs) i
 
 Your task is to construct a robust meta-approach/method that integrates the calls from the different methods in a way that achieves highest accuracy on an independent test dataset.
 
-## Final test data
-This dataset (real2_part2) consists of a set of variant calls for the 4 algorithms on real tumor data. You must compute your predictions [0 = no SNV, 1 = SNV] for each of the candidate SNVs (union of predicted SNVs from all 4 methods). Please submit your predictions of true mutations in the test data as a bed file together with your report.
+## Content of repo
+- function.R = Contains F1 and preprocessing functions used
+- model.R = Contains code used for the model
+- final_model.rds = Contains the trained model
+- predict.R = File to generate predictions
 
-## Recommended reading
-- Two somatic SNV meta-callers:
-  - <http://genomebiology.com/2015/16/1/197>
-  - <https://academic.oup.com/bioinformatics/article/35/17/3157/5288515> 
-Read these papers to get inspirations of new features or approaches you could add to your model.
-Paper describing the DREAM challenge on SNV prediction, including a description of the synthetic datasets used in this project: <http://www.nature.com/nmeth/journal/v12/n7/abs/nmeth.3407.html>
+
