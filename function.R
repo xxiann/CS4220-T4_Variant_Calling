@@ -18,16 +18,18 @@ calc.F1 = function(pred,truth) {
   return(res)
 }
 
-
 preprocess.2 <- function(file){
-  df <- read.csv(file)
+  df <- fread(file)
+  
+  # obtaining medium values for each row
   med <- median(df$vs_SSC, na.rm = T)
   med.1 <- median(df$m2_MQ, na.rm = T)
   med.2 <- median(df$f_MQMR, na.rm = T)
   med.3 <- median(df$vd_SSF, na.rm = T)
   med.4 <- median(df$vs_SPV, na.rm = T)
   med.5 <- median(df$vd_MSI, na.rm = T)
-  ## obtaining VC
+  
+  # obtaining detected VC
   x <- data.frame(t(data.frame(strsplit(df$REF_MFVdVs, "/"), row.names =c("Mutect2","Freebayes","Vardict","Varscan"))))
   rownames(x) <- c(1:nrow(x))
   x[!(is.na(x)|x=="NA")] = TRUE
@@ -35,6 +37,7 @@ preprocess.2 <- function(file){
   for(i in 1:4){x[,i] <- as.logical(x[,i])}
   df <- cbind(df,x)
   
+  # NA filling
   df <- df %>%
     mutate(m2_MQ = ifelse(is.na(m2_MQ), ifelse(!is.na(f_MQMR), f_MQMR, med.1), m2_MQ),
            f_MQMR = ifelse(is.na(f_MQMR), ifelse(!is.na(m2_MQ), m2_MQ, med.2), f_MQMR)) %>%
