@@ -203,10 +203,3 @@ cython_debug/
 # User added:
 
 data/
-*.csv
-*.txt
-*.html
-*.Rproj
-*.nb
-*.Rmd
-*.png
