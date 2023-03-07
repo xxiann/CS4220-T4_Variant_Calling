@@ -2,8 +2,6 @@
 library(ranger)
 library(data.table)
 library(dplyr)
-library(caret)
-library(performanceEstimation)
 source("function.R")
 source("parse-vcf-snv-wrapper.R")
 
@@ -59,5 +57,5 @@ rf.m1 <- ranger(formula = y ~ ., data = m1, y = y, num.trees = ntrees, seed = se
 print( Sys.time() - start )
 
 # saving random forest model
-save(rf.m1,file="final_model.rds")
+save(rf.m1,file="final_model.RData")
 
