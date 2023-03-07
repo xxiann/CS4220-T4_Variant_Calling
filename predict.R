@@ -29,11 +29,11 @@ output$Prediction[probabilities > .5] = 1
 output$Prediction[probabilities <= .5] = 0
 
 # saving predictions (prediction for all positions)
-fwrite(output,"team4_real2_part2.predictions_submission.bed", sep = '\t')
+fwrite(output,"prediction/team4_real2_part2.predictions_submission.bed", sep = '\t')
 
 # saving predictions (positives only, following format of given truth files)
 mutations.only <- output[output$Prediction == 1,1:3]
-fwrite(mutations.only,"team4_real2_part2.predictions_mutations.only_submission.bed", sep = '\t')
+fwrite(mutations.only,"prediction/team4_real2_part2.predictions_mutations.only_submission.bed", sep = '\t')
 
 
 ######## f1 stats #########

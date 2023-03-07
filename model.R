@@ -5,6 +5,7 @@ library(dplyr)
 library(caret)
 library(performanceEstimation)
 source("function.R")
+source("parse-vcf-snv-wrapper.R")
 
 # parameters
 ntrees <- 1000
@@ -12,6 +13,13 @@ seed <- 0
 set.seed(seed)
 
 ########### Loading training data ############
+# parsing data
+# parse.df = parse.snv(sample.dir='data/real1')
+# write.table(parse.df, 'output/snv-parse-real1.txt', row.names = F, quote = F, sep = '\t')
+# 
+# parse.df = parse.snv(sample.dir='data/real2_part1')
+# write.table(parse.df, 'output/snv-parse-real2_part1.txt', row.names = F, quote = F, sep = '\t')
+
 # loading parsed data & data preprocessing
 preal1 <- preprocess.2("output/snv-parse-real1.txt") 
 preal2p1 <- preprocess.2("output/snv-parse-real2_part1.txt")
