@@ -11,8 +11,12 @@ Your task is to construct a robust meta-approach/method that integrates the call
 
 ## Content of repo
 - function.R = Contains F1 and preprocessing functions used
-- model.R = Contains code used for the model
-- final_model.rds = Contains the trained model
-- predict.R = File to generate predictions
+- model.R = Contains code used to train the final model
+- final_model.rds = Contains the final trained model
+- predict.R = File to generate predictions for real2_part1
+- parse-vcf-snv-wrapper.R = Parser function
 
+## To reproduce the model and prediction
+Obtain the data files for real1, real2part1 and real2part2
+Run model.R, then run predict.R to obtain the final predictions.
 
