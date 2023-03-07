@@ -8,8 +8,9 @@
 - `parse-vcf-snv-wrapper.R` = Parser function
 
 ## To reproduce the model and prediction
-Obtain the data files for real1, real2part1 and real2part2
-Run model.R, then run predict.R to obtain the final predictions.
+Obtain the data files for `real1`, `real2_part1` and `real2_part2`
+
+Run `model.R`, then run `predict.R` to obtain the final predictions.
 
 ## Task
 You are working on a project to call somatic single nucleotide variants (SNVs) in cancer. You are running 4 different SNV calling algorithms that sometimes give different results. The four SNV algorithms are: 
